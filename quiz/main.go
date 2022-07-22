@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -18,40 +17,51 @@ func init() {
 	flag.Parse()
 }
 
-func main() {
-	problems, err := os.ReadFile(csvFile)
+type problem struct {
+	question string
+	answer   int
+}
+
+func logError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	r := csv.NewReader(strings.NewReader(string(problems)))
+}
 
-	questionCount := 0
-	score := 0
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
+func generateProblemsArray() []problem {
+	file, err := os.ReadFile(csvFile)
+	logError(err)
+	r := csv.NewReader(strings.NewReader(string(file)))
 
-		questionCount++
+	lines, err := r.ReadAll() // array of lines
+	logError(err)
 
-		question, a := record[0], record[1]
-		answer, err := strconv.Atoi(a)
-		if err != nil {
-			continue
-		}
+	problems := make([]problem, len(lines))
 
-		var userInput int
-		fmt.Print(question, " ")
-		fmt.Scanf("%d", &userInput)
-		if userInput == answer {
-			score++
+	for i, line := range lines {
+		answerNum, err := strconv.Atoi(line[1])
+		logError(err)
+
+		problems[i] = problem{
+			question: line[0],
+			answer:   answerNum,
 		}
 	}
 
-	fmt.Printf("%d/%d\n", score, questionCount)
+	return problems
+}
 
+func main() {
+	problems := generateProblemsArray()
+	correct := 0
+	for i, problem := range problems {
+		fmt.Printf("Problem #%d: %s = ? ", i+1, problem.question)
+		var answer int
+		fmt.Scanf("%d", &answer)
+		if answer == problem.answer {
+			correct++
+		}
+	}
+
+	fmt.Printf("Score: %d/%d", correct, len(problems))
 }
