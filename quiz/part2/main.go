@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ func init() {
 	flag.StringVar(&csvFile, "csv", "problems.csv", "path to csv file with problems")
 	flag.IntVar(&timeLimit, "limit", 10, "time limit for size in seconds")
 	flag.Parse()
+	rand.Seed(time.Now().UnixNano())
 }
 
 type problem struct {
@@ -54,8 +56,16 @@ func generateProblemsArray() []problem {
 	return problems
 }
 
+func shuffle(problems []problem) []problem {
+	for i := range problems {
+		swapI := rand.Intn(len(problems))
+		problems[i], problems[swapI] = problems[swapI], problems[i]
+	}
+	return problems
+}
+
 func main() {
-	problems := generateProblemsArray()
+	problems := shuffle(generateProblemsArray())
 	t := time.NewTimer(time.Duration(timeLimit) * time.Second)
 	answerCh := make(chan int)
 	correct := 0
