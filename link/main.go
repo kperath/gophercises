@@ -62,5 +62,9 @@ func getLinks(filename string) []Link {
 
 func main() {
 	fmt.Println("==HTML PARSER==")
-	fmt.Println(getLinks("ex2.html"))
+	if len(os.Args) != 2 {
+		log.Fatal("html file argument required")
+	}
+	fileName := os.Args[1]
+	fmt.Println(getLinks(fileName))
 }
